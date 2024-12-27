@@ -1,3 +1,5 @@
+"use client";
+
 import DownloadListYT from "@/components/downloadListYT";
 import { title } from "@/components/primitives";
 
