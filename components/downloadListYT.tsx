@@ -1,10 +1,10 @@
-"use client";
-
 import { Button } from "@nextui-org/button";
 import { Form } from "@nextui-org/form";
 import { Input } from "@nextui-org/input";
 import { Spinner } from "@nextui-org/spinner";
 import { useEffect, useState } from "react";
+
+const baseApi = process.env.NEXT_PUBLIC_API_URL;
 
 export default function DownloadListYT() {
   const [isLoading, setIsLoading] = useState(false);
@@ -12,13 +12,16 @@ export default function DownloadListYT() {
   const [url, setUrl] = useState("");
   const [error, setError] = useState("");
 
-  const baseApi = process.env.NEXT_PUBLIC_API_URL;
-
   useEffect(() => {
-    const newUrl = new URL(`${baseApi}/youtube/list/url`);
+    try {
+      const newUrl = new URL(`${baseApi}/youtube/list/url`);
 
-    newUrl.searchParams.append("url", value);
-    setUrl(newUrl.toString());
+      newUrl.searchParams.append("url", value);
+      setUrl(newUrl.toString());
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error) {
+      return;
+    }
   }, [value]);
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
