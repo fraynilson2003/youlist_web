@@ -117,7 +117,7 @@ export default function DownloadListYT() {
       <div className="text-small flex h-14  flex-col w-full bgre justify-center items-center gap-4 text-default-500 my-4">
         {isLoading && (
           <>
-            <Spinner size="lg" color="success" />
+            <Spinner color="success" size="lg" />
             <span>
               Preparando el archivo para descargar, esto puede tomar algunos
               minutos.
