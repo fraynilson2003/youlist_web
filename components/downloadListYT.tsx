@@ -33,6 +33,7 @@ export default function DownloadListYT() {
       try {
         const response = await fetch(url, {
           method: "GET",
+          mode: "no-cors",
         });
 
         if (!response.ok) {
