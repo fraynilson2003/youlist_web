@@ -6,6 +6,6 @@ export const siteConfig = {
   navItems: [],
   navMenuItems: [],
   links: {
-    github: "https://github.com/fraynilson2003/chat-ai-local",
+    github: "https://github.com/fraynilson2003/youlist_web",
   },
 };
