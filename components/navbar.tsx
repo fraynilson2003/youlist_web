@@ -21,7 +21,7 @@ export const Navbar = () => {
             <Image
               alt="logo"
               height={60}
-              src={"/brand/black_on_trans.png"}
+              src={"/white_on_trans.png"}
               width={60}
             />
             <p className="font-bold text-inherit">YouList</p>
