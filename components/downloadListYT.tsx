@@ -1,20 +1,24 @@
+import { useEffect, useState } from "react";
 import { Button } from "@nextui-org/button";
 import { Form } from "@nextui-org/form";
 import { Input } from "@nextui-org/input";
 import { Spinner } from "@nextui-org/spinner";
-import { useEffect, useState } from "react";
+
+import { ResponseToken } from "@/types/responseApi";
 
 const baseApi = process.env.NEXT_PUBLIC_API_URL;
 
 export default function DownloadListYT() {
   const [isLoading, setIsLoading] = useState(false);
-  const [value, setValue] = useState("");
+  const [value, setValue] = useState(
+    "https://www.youtube.com/watch?v=TVTZfsoM2ME&list=PLFNUImapc0zJcOWstLHHBDRvmAewDqzD5&index=2"
+  );
   const [url, setUrl] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
     try {
-      const newUrl = new URL(`${baseApi}/youtube/list/url`);
+      const newUrl = new URL(`${baseApi}/playlist/mp3`);
 
       newUrl.searchParams.append("url", value);
       setUrl(newUrl.toString());
@@ -35,39 +39,50 @@ export default function DownloadListYT() {
           method: "GET",
         });
 
-        if (!response.ok) {
+        if (response.status === 401) {
           const data = await response.json();
-          const messageError =
-            data.message || "Error descargando la lista de reproducción";
+          const url: string = data.url;
 
-          throw new Error(messageError);
+          window.location.href = url;
         }
 
-        let filename = "download.7z";
-        const header = response.headers.get("Content-Disposition");
+        if (response.status === 200) {
+          let filename = "download.7z";
+          const header = response.headers.get("Content-Disposition");
 
-        if (header) {
-          filename = header.split(/;(.+)/)[1].split(/=(.+)/)[1];
-          if (filename.toLowerCase().startsWith("utf-8''"))
-            filename = decodeURIComponent(filename.replace(/utf-8''/i, ""));
-          else filename = filename.replace(/['"]/g, "");
+          if (header) {
+            filename = header.split(/;(.+)/)[1].split(/=(.+)/)[1];
+            if (filename.toLowerCase().startsWith("utf-8''"))
+              filename = decodeURIComponent(filename.replace(/utf-8''/i, ""));
+            else filename = filename.replace(/['"]/g, "");
+          }
+
+          const blob = await response.blob();
+
+          const downloadUrl = window.URL.createObjectURL(blob);
+
+          const link = document.createElement("a");
+
+          link.href = downloadUrl;
+          link.download = filename;
+
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+
+          window.URL.revokeObjectURL(downloadUrl);
+          resetForm();
         }
 
-        const blob = await response.blob();
+        if (
+          response.status >= 400 &&
+          response.status <= 500 &&
+          response.status !== 401
+        ) {
+          const data = await response.json();
 
-        const downloadUrl = window.URL.createObjectURL(blob);
-
-        const link = document.createElement("a");
-
-        link.href = downloadUrl;
-        link.download = filename;
-
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-
-        window.URL.revokeObjectURL(downloadUrl);
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          setError(data.message ?? "Ocurrio un error en la descarga.");
+        }
       } catch (error) {
         if (error instanceof Error) {
           setError(error.message);
@@ -75,7 +90,7 @@ export default function DownloadListYT() {
           setError("Ocurrio un error en la descarga.");
         }
       } finally {
-        resetForm();
+        setIsLoading(false);
       }
     };
 
