@@ -4,15 +4,11 @@ import { Form } from "@nextui-org/form";
 import { Input } from "@nextui-org/input";
 import { Spinner } from "@nextui-org/spinner";
 
-import { ResponseToken } from "@/types/responseApi";
-
 const baseApi = process.env.NEXT_PUBLIC_API_URL;
 
 export default function DownloadListYT() {
   const [isLoading, setIsLoading] = useState(false);
-  const [value, setValue] = useState(
-    "https://www.youtube.com/watch?v=TVTZfsoM2ME&list=PLFNUImapc0zJcOWstLHHBDRvmAewDqzD5&index=2"
-  );
+  const [value, setValue] = useState("");
   const [url, setUrl] = useState("");
   const [error, setError] = useState("");
 
