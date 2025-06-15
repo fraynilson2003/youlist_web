@@ -48,6 +48,18 @@ export default function DownloadListYT() {
     }
   };
 
+  const validateList = (url: string): boolean => {
+    const urlObj = new URL(url);
+
+    const list = urlObj.searchParams.get("list");
+
+    if (!list) {
+      return false;
+    }
+
+    return !list.startsWith("RD");
+  };
+
   const validateForm = (url: string): boolean => {
     if (!url.trim()) {
       setError("Por favor ingresa una URL de YouTube");
@@ -58,6 +70,14 @@ export default function DownloadListYT() {
     if (!validateYouTubeUrl(url)) {
       setError(
         "La URL debe ser de YouTube y contener una lista de reproducción"
+      );
+
+      return false;
+    }
+
+    if (!validateList(url)) {
+      setError(
+        'No se pueden procesar listas tipo "mix/radio" son listas creadas por youtube, usa una lista creada por usuarios.'
       );
 
       return false;
@@ -164,6 +184,7 @@ export default function DownloadListYT() {
           value={value}
           onChange={(e) => {
             const newValue = e.target.value;
+
             setValue(newValue);
             if (isTouched) {
               validateForm(newValue);
