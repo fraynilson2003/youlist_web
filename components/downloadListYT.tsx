@@ -11,6 +11,7 @@ export default function DownloadListYT() {
   const [value, setValue] = useState("");
   const [url, setUrl] = useState("");
   const [error, setError] = useState("");
+  const [isTouched, setIsTouched] = useState(false);
 
   useEffect(() => {
     try {
@@ -24,8 +25,56 @@ export default function DownloadListYT() {
     }
   }, [value]);
 
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const validateYouTubeUrl = (url: string): boolean => {
+    try {
+      const urlObj = new URL(url);
+
+      // Verificar que sea un dominio de YouTube
+      if (
+        !urlObj.hostname.includes("youtube.com") &&
+        !urlObj.hostname.includes("youtu.be")
+      ) {
+        return false;
+      }
+
+      // Verificar si es una URL de lista de reproducción o contiene el parámetro list
+      return (
+        url.includes("list=") ||
+        url.includes("playlist?list=") ||
+        url.includes("&list=")
+      );
+    } catch {
+      return false;
+    }
+  };
+
+  const validateForm = (url: string): boolean => {
+    if (!url.trim()) {
+      setError("Por favor ingresa una URL de YouTube");
+
+      return false;
+    }
+
+    if (!validateYouTubeUrl(url)) {
+      setError(
+        "La URL debe ser de YouTube y contener una lista de reproducción"
+      );
+
+      return false;
+    }
+
+    setError("");
+
+    return true;
+  };
+
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setIsTouched(true);
+
+    if (!validateForm(value)) {
+      return;
+    }
 
     const handle = async () => {
       setIsLoading(true);
@@ -107,18 +156,27 @@ export default function DownloadListYT() {
     >
       <div className="w-full flex  justify-center gap-2 items-center lg:gap-4">
         <Input
-          errorMessage="Por favor ingresa un id o una url de una lista de YouTube"
           isDisabled={isLoading}
           labelPlacement="outside"
           name="url"
-          placeholder="Ingresa una url de un video dentro de una lista de reproducción"
+          placeholder="https://www.youtube.com/playlist?list=... o https://youtu.be/...?list=..."
           type="text"
           value={value}
-          onChange={(e) => setValue(e.target.value)}
+          onChange={(e) => {
+            const newValue = e.target.value;
+            setValue(newValue);
+            if (isTouched) {
+              validateForm(newValue);
+            }
+          }}
+          onBlur={() => {
+            setIsTouched(true);
+            validateForm(value);
+          }}
         />
 
         <Button
-          isDisabled={!value || isLoading}
+          isDisabled={!value || isLoading || !!error}
           type="submit"
           variant="bordered"
         >
