@@ -6,28 +6,20 @@ import { Spinner } from "@nextui-org/spinner";
 
 const baseApi = process.env.NEXT_PUBLIC_API_URL;
 
+export const keyUrlList = "url";
+export const keyIdList = "list";
+export const keyIdMusic = "v";
+
 export default function DownloadListYT() {
   const [isLoading, setIsLoading] = useState(false);
   const [value, setValue] = useState("");
-  const [url, setUrl] = useState("");
   const [error, setError] = useState("");
   const [isTouched, setIsTouched] = useState(false);
-
-  useEffect(() => {
-    try {
-      const newUrl = new URL(`${baseApi}/playlist/mp3`);
-
-      newUrl.searchParams.append("url", value);
-      setUrl(newUrl.toString());
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
-      return;
-    }
-  }, [value]);
 
   const validateYouTubeUrl = (url: string): boolean => {
     try {
       const urlObj = new URL(url);
+      const params = urlObj.searchParams;
 
       // Verificar que sea un dominio de YouTube
       if (
@@ -38,26 +30,10 @@ export default function DownloadListYT() {
       }
 
       // Verificar si es una URL de lista de reproducción o contiene el parámetro list
-      return (
-        url.includes("list=") ||
-        url.includes("playlist?list=") ||
-        url.includes("&list=")
-      );
+      return params.has(keyIdList) || params.has(keyIdMusic);
     } catch {
       return false;
     }
-  };
-
-  const validateList = (url: string): boolean => {
-    const urlObj = new URL(url);
-
-    const list = urlObj.searchParams.get("list");
-
-    if (!list) {
-      return false;
-    }
-
-    return !list.startsWith("RD");
   };
 
   const validateForm = (url: string): boolean => {
@@ -70,14 +46,6 @@ export default function DownloadListYT() {
     if (!validateYouTubeUrl(url)) {
       setError(
         "La URL debe ser de YouTube y contener una lista de reproducción"
-      );
-
-      return false;
-    }
-
-    if (!validateList(url)) {
-      setError(
-        'No se pueden procesar listas tipo "mix/radio" son listas creadas por youtube, usa una lista creada por usuarios.'
       );
 
       return false;
@@ -100,7 +68,11 @@ export default function DownloadListYT() {
       setIsLoading(true);
       setError("");
       try {
-        const response = await fetch(url, {
+        const urlFetch = new URL(`${baseApi}/playlist/mp3`);
+
+        urlFetch.searchParams.append(keyUrlList, value);
+
+        const response = await fetch(urlFetch, {
           method: "GET",
         });
 
@@ -164,22 +136,21 @@ export default function DownloadListYT() {
 
   const resetForm = () => {
     setValue("");
-    setUrl("");
     setIsLoading(false);
   };
 
   return (
     <Form
-      className="w-full max-w-5xl mt-8 lg:mt-8"
+      className="mt-8 w-full max-w-5xl lg:mt-8"
       validationBehavior="native"
       onSubmit={onSubmit}
     >
-      <div className="w-full flex  justify-center gap-2 items-center lg:gap-4">
+      <div className="flex gap-2 justify-center items-center w-full lg:gap-4">
         <Input
           isDisabled={isLoading}
           labelPlacement="outside"
           name="url"
-          placeholder="https://www.youtube.com/playlist?list=... o https://youtu.be/...?list=..."
+          placeholder="https://youtube/...?list=... o https://www.youtube.com/watch?v=..."
           type="text"
           value={value}
           onChange={(e) => {
@@ -205,9 +176,9 @@ export default function DownloadListYT() {
         </Button>
       </div>
 
-      <span className="h-10 text-base  text-red-500">{error}</span>
+      <span className="h-10 text-base text-red-500">{error}</span>
 
-      <div className="text-small flex h-14  flex-col w-full bgre justify-center items-center gap-4 text-default-500 my-4">
+      <div className="flex flex-col gap-4 justify-center items-center my-4 w-full h-14 text-small bgre text-default-500">
         {isLoading && (
           <>
             <Spinner color="success" size="lg" />
